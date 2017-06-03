@@ -100,9 +100,17 @@ public final class RxJavaCallAdapterFactory extends CallAdapter.Factory {
     if (rawType != Observable.class && !isSingle && !isCompletable) {
       return null;
     }
+    
+    int count;
+    for (Annotation annotation : annotations) {
+      if (!Retry.class.isAssignableFrom(annotation.getClass())) continue;
+      count = Retry.class.cast(annotation).count();
+      if (count<0) throw new IllegalArgumentException(
+          "The count in the \'@Retry\' is less than zero");
+    }
 
     if (isCompletable) {
-      return new RxJavaCallAdapter(Void.class, scheduler, isAsync, false, true, false, true);
+      return new RxJavaCallAdapter(Void.class, scheduler, count, isAsync, false, true, false, true);
     }
 
     boolean isResult = false;
@@ -134,7 +142,7 @@ public final class RxJavaCallAdapterFactory extends CallAdapter.Factory {
       isBody = true;
     }
 
-    return new RxJavaCallAdapter(responseType, scheduler, isAsync, isResult, isBody, isSingle,
+    return new RxJavaCallAdapter(responseType, scheduler, count, isAsync, isResult, isBody, isSingle,
         false);
   }
 }
