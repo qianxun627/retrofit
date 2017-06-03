@@ -27,16 +27,18 @@ import rx.Scheduler;
 final class RxJavaCallAdapter<R> implements CallAdapter<R, Object> {
   private final Type responseType;
   private final @Nullable Scheduler scheduler;
+  private fainal int retryCount;
   private final boolean isAsync;
   private final boolean isResult;
   private final boolean isBody;
   private final boolean isSingle;
   private final boolean isCompletable;
 
-  RxJavaCallAdapter(Type responseType, @Nullable Scheduler scheduler, boolean isAsync,
-      boolean isResult, boolean isBody, boolean isSingle, boolean isCompletable) {
+  RxJavaCallAdapter(Type responseType, @Nullable Scheduler scheduler, int retryCount,
+      boolean isAsync, boolean isResult, boolean isBody, boolean isSingle, boolean isCompletable) {
     this.responseType = responseType;
     this.scheduler = scheduler;
+    this.retryCount = retryCount
     this.isAsync = isAsync;
     this.isResult = isResult;
     this.isBody = isBody;
@@ -61,7 +63,7 @@ final class RxJavaCallAdapter<R> implements CallAdapter<R, Object> {
     } else {
       func = callFunc;
     }
-    Observable<?> observable = Observable.create(func);
+    Observable<?> observable = Observable.create(func).retryWhen(new RetryWhenHandler(retryCount));
 
     if (scheduler != null) {
       observable = observable.subscribeOn(scheduler);
