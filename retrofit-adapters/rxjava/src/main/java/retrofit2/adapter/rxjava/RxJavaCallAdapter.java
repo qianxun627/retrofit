@@ -27,7 +27,7 @@ import rx.Scheduler;
 final class RxJavaCallAdapter<R> implements CallAdapter<R, Object> {
   private final Type responseType;
   private final @Nullable Scheduler scheduler;
-  private fainal int retryCount;
+  private final int retryCount;
   private final boolean isAsync;
   private final boolean isResult;
   private final boolean isBody;
